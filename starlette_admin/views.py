@@ -19,6 +19,7 @@ from jinja2 import Template
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette.templating import Jinja2Templates
+
 from starlette_admin._types import ExportType, RequestAction, RowActionsDisplayType
 from starlette_admin.actions import action, link_row_action, row_action
 from starlette_admin.exceptions import ActionFailed
@@ -83,11 +84,11 @@ class DropDown(BaseView):
     """
 
     def __init__(
-        self,
-        label: str,
-        views: List[Union[Type[BaseView], BaseView]],
-        icon: Optional[str] = None,
-        always_open: bool = True,
+            self,
+            label: str,
+            views: List[Union[Type[BaseView], BaseView]],
+            icon: Optional[str] = None,
+            always_open: bool = True,
     ) -> None:
         self.label = label
         self.icon = icon
@@ -114,11 +115,11 @@ class Link(BaseView):
     """
 
     def __init__(
-        self,
-        label: str = "",
-        icon: Optional[str] = None,
-        url: str = "/",
-        target: Optional[str] = "_self",
+            self,
+            label: str = "",
+            icon: Optional[str] = None,
+            url: str = "/",
+            target: Optional[str] = "_self",
     ):
         self.label = label
         self.icon = icon
@@ -145,14 +146,14 @@ class CustomView(BaseView):
     """
 
     def __init__(
-        self,
-        label: str,
-        icon: Optional[str] = None,
-        path: str = "/",
-        template_path: str = "index.html",
-        name: Optional[str] = None,
-        methods: Optional[List[str]] = None,
-        add_to_menu: bool = True,
+            self,
+            label: str,
+            icon: Optional[str] = None,
+            path: str = "/",
+            template_path: str = "index.html",
+            name: Optional[str] = None,
+            methods: Optional[List[str]] = None,
+            add_to_menu: bool = True,
     ):
         self.label = label
         self.icon = icon
@@ -291,10 +292,10 @@ class BaseModelView(BaseView):
             if not isinstance(field, CollectionField):
                 all_field_names.append(name)
                 field.searchable = (self.searchable_fields is None) or (
-                    name in self.searchable_fields
+                        name in self.searchable_fields
                 )
                 field.orderable = (self.sortable_fields is None) or (
-                    name in self.sortable_fields
+                        name in self.sortable_fields
                 )
         if self.searchable_fields is None:
             self.searchable_fields = all_field_names[:]
@@ -330,7 +331,7 @@ class BaseModelView(BaseView):
         and validates that all specified actions exist.
         """
         for _method_name, method in inspect.getmembers(
-            self, predicate=inspect.ismethod
+                self, predicate=inspect.ismethod
         ):
             if hasattr(method, "_action"):
                 name = method._action.get("name")
@@ -342,7 +343,7 @@ class BaseModelView(BaseView):
 
     def _init_row_actions(self) -> None:
         for _method_name, method in inspect.getmembers(
-            self, predicate=inspect.ismethod
+                self, predicate=inspect.ismethod
         ):
             if hasattr(method, "_row_action"):
                 name = method._row_action.get("name")
@@ -407,20 +408,21 @@ class BaseModelView(BaseView):
             if await self.is_row_action_allowed(request, row_action_name):
                 _row_action = self._row_actions.get(row_action_name, {})
                 if (
-                    request.state.action == RequestAction.LIST
-                    and not _row_action.get("exclude_from_list")
+                        request.state.action == RequestAction.LIST
+                        and not _row_action.get("exclude_from_list")
                 ) or (
-                    request.state.action == RequestAction.DETAIL
-                    and not _row_action.get("exclude_from_detail")
+                        request.state.action == RequestAction.DETAIL
+                        and not _row_action.get("exclude_from_detail")
                 ):
                     row_actions.append(_row_action)
         return row_actions
 
     async def handle_action(
-        self, request: Request, pks: List[Any], name: str
+            self, request: Request, pks: List[Any], name: str, table_query_filter: dict = None
     ) -> Union[str, Response]:
         """
         Handle action with `name`.
+        table_query_filter is filter applied in datatable js
         Raises:
             ActionFailed: to display meaningfully error
         """
@@ -438,7 +440,7 @@ class BaseModelView(BaseView):
         return handler_return
 
     async def handle_row_action(
-        self, request: Request, pk: Any, name: str
+            self, request: Request, pk: Any, name: str
     ) -> Union[str, Response]:
         """
         Handle row action with `name`.
@@ -510,12 +512,12 @@ class BaseModelView(BaseView):
 
     @abstractmethod
     async def find_all(
-        self,
-        request: Request,
-        skip: int = 0,
-        limit: int = 100,
-        where: Union[Dict[str, Any], str, None] = None,
-        order_by: Optional[List[str]] = None,
+            self,
+            request: Request,
+            skip: int = 0,
+            limit: int = 100,
+            where: Union[Dict[str, Any], str, None] = None,
+            order_by: Optional[List[str]] = None,
     ) -> Sequence[Any]:
         """
         Find all items
@@ -534,9 +536,9 @@ class BaseModelView(BaseView):
 
     @abstractmethod
     async def count(
-        self,
-        request: Request,
-        where: Union[Dict[str, Any], str, None] = None,
+            self,
+            request: Request,
+            where: Union[Dict[str, Any], str, None] = None,
     ) -> int:
         """
         Count items
@@ -571,7 +573,7 @@ class BaseModelView(BaseView):
         raise NotImplementedError()
 
     async def before_create(
-        self, request: Request, data: Dict[str, Any], obj: Any
+            self, request: Request, data: Dict[str, Any], obj: Any
     ) -> None:
         """
         This hook is called before a new item is created.
@@ -604,7 +606,7 @@ class BaseModelView(BaseView):
         """
 
     async def before_edit(
-        self, request: Request, data: Dict[str, Any], obj: Any
+            self, request: Request, data: Dict[str, Any], obj: Any
     ) -> None:
         """
         This hook is called before an item is edited.
@@ -682,7 +684,7 @@ class BaseModelView(BaseView):
         return True
 
     async def serialize_field_value(
-        self, value: Any, field: BaseField, action: RequestAction, request: Request
+            self, value: Any, field: BaseField, action: RequestAction, request: Request
     ) -> Any:
         """
         Format output value for each field.
@@ -704,12 +706,12 @@ class BaseModelView(BaseView):
         return await field.serialize_value(request, value, action)
 
     async def serialize(
-        self,
-        obj: Any,
-        request: Request,
-        action: RequestAction,
-        include_relationships: bool = True,
-        include_select2: bool = False,
+            self,
+            obj: Any,
+            request: Request,
+            action: RequestAction,
+            include_relationships: bool = True,
+            include_select2: bool = False,
     ) -> Dict[str, Any]:
         obj_serialized: Dict[str, Any] = {}
         obj_meta: Dict[str, Any] = {}
@@ -844,8 +846,8 @@ class BaseModelView(BaseView):
             field.name
             for field in self.get_fields_list(request)
             if (
-                not isinstance(field, (RelationField, FileField))
-                and not field.exclude_from_detail
+                    not isinstance(field, (RelationField, FileField))
+                    and not field.exclude_from_detail
             )
         ]
         html_repr_method = getattr(
@@ -914,9 +916,9 @@ class BaseModelView(BaseView):
         return [f"{name}:name" for name in self.export_fields]  # type: ignore
 
     def get_fields_list(
-        self,
-        request: Request,
-        action: RequestAction = RequestAction.LIST,
+            self,
+            request: Request,
+            action: RequestAction = RequestAction.LIST,
     ) -> Sequence[BaseField]:
         """Return a list of field instances to display in the specified view action.
         This function excludes fields with corresponding exclude flags, which are
@@ -929,7 +931,7 @@ class BaseModelView(BaseView):
         return extract_fields(self.fields, action)
 
     def _additional_css_links(
-        self, request: Request, action: RequestAction
+            self, request: Request, action: RequestAction
     ) -> Sequence[str]:
         links = self.additional_css_links or []
         for field in self.get_fields_list(request, action):
@@ -939,7 +941,7 @@ class BaseModelView(BaseView):
         return links
 
     def _additional_js_links(
-        self, request: Request, action: RequestAction
+            self, request: Request, action: RequestAction
     ) -> Sequence[str]:
         links = self.additional_js_links or []
         for field in self.get_fields_list(request, action):

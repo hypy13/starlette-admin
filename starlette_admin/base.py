@@ -26,6 +26,7 @@ from starlette.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from starlette.templating import Jinja2Templates
+
 from starlette_admin._types import RequestAction
 from starlette_admin.auth import BaseAuthProvider
 from starlette_admin.exceptions import ActionFailed, FormValidationError
@@ -46,20 +47,20 @@ class BaseAdmin:
     """Base class for implementing Admin interface."""
 
     def __init__(
-        self,
-        title: str = _("Admin"),
-        base_url: str = "/admin",
-        route_name: str = "admin",
-        logo_url: Optional[str] = None,
-        login_logo_url: Optional[str] = None,
-        templates_dir: str = "templates",
-        statics_dir: Optional[str] = None,
-        index_view: Optional[CustomView] = None,
-        auth_provider: Optional[BaseAuthProvider] = None,
-        middlewares: Optional[Sequence[Middleware]] = None,
-        debug: bool = False,
-        i18n_config: Optional[I18nConfig] = None,
-        favicon_url: Optional[str] = None,
+            self,
+            title: str = _("Admin"),
+            base_url: str = "/admin",
+            route_name: str = "admin",
+            logo_url: Optional[str] = None,
+            login_logo_url: Optional[str] = None,
+            templates_dir: str = "templates",
+            statics_dir: Optional[str] = None,
+            index_view: Optional[CustomView] = None,
+            auth_provider: Optional[BaseAuthProvider] = None,
+            middlewares: Optional[Sequence[Middleware]] = None,
+            debug: bool = False,
+            i18n_config: Optional[I18nConfig] = None,
+            favicon_url: Optional[str] = None,
     ):
         """
         Parameters:
@@ -279,7 +280,7 @@ class BaseAdmin:
         )
 
     def _render_custom_view(
-        self, custom_view: CustomView
+            self, custom_view: CustomView
     ) -> Callable[[Request], Awaitable[Response]]:
         async def wrapper(request: Request) -> Response:
             if not custom_view.is_accessible(request):
@@ -358,10 +359,14 @@ class BaseAdmin:
             identity = request.path_params.get("identity")
             pks = request.query_params.getlist("pks")
             name = not_none(request.query_params.get("name"))
+            table_query_filter = request.query_params.get('query_filter')
+            if table_query_filter:
+                table_query_filter = json.loads(table_query_filter)
+
             model = self._find_model_from_identity(identity)
             if not model.is_accessible(request):
                 raise ActionFailed("Forbidden")
-            handler_return = await model.handle_action(request, pks, name)
+            handler_return = await model.handle_action(request, pks, name, table_query_filter)
             if isinstance(handler_return, Response):
                 return handler_return
             return JSONResponse({"msg": handler_return})
@@ -513,9 +518,9 @@ class BaseAdmin:
         return RedirectResponse(url, status_code=HTTP_303_SEE_OTHER)
 
     async def _render_error(
-        self,
-        request: Request,
-        exc: Exception = HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR),
+            self,
+            request: Request,
+            exc: Exception = HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR),
     ) -> Response:
         assert isinstance(exc, HTTPException)
         return self.templates.TemplateResponse(
@@ -526,11 +531,11 @@ class BaseAdmin:
         )
 
     async def form_to_dict(
-        self,
-        request: Request,
-        form_data: FormData,
-        model: BaseModelView,
-        action: RequestAction,
+            self,
+            request: Request,
+            form_data: FormData,
+            model: BaseModelView,
+            action: RequestAction,
     ) -> Dict[str, Any]:
         data = {}
         for field in model.get_fields_list(request, action):
@@ -538,9 +543,9 @@ class BaseAdmin:
         return data
 
     def mount_to(
-        self,
-        app: Starlette,
-        redirect_slashes: bool = True,
+            self,
+            app: Starlette,
+            redirect_slashes: bool = True,
     ) -> None:
         admin_app = Starlette(
             routes=self.routes,

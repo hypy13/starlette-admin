@@ -333,6 +333,8 @@ $(function () {
       };
       if (data.search.value != "") query.where = data.search.value;
       else if (where) query.where = JSON.stringify(where);
+        table.query = where
+
       $.ajax({
         url: model.apiUrl,
         type: "get",
@@ -340,6 +342,8 @@ $(function () {
         traditional: true,
         dataType: "json",
         success: function (data, status, xhr) {
+          table.query_filter = where;
+          table.query_filter_count = data.total;
           total = data.total;
           data = data.items;
           data.forEach((d) => {
@@ -433,7 +437,7 @@ $(function () {
     });
 
   actionManager.initNoConfirmationActions();
-  actionManager.initActionModal();
+  actionManager.initActionModal(table);
 
   $('[data-toggle="tooltip"]').tooltip();
 });
